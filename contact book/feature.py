@@ -96,7 +96,14 @@ def search_id_contact(keyword, data):
 def search_contact(data):
     keyword = input("input a keyword: ")
     key = search_id_contact(keyword, data)
-    if str(key) or key == "None":
+    # ``search_id_contact`` returns ``None`` when the keyword isn't found.
+    # The previous implementation used ``if str(key) or key == "None"`` which
+    # always evaluated to ``True`` (since ``str(None)`` is the non-empty string
+    # ``"None"``).  As a result the code attempted to index ``data[None]`` and
+    # crashed with a ``TypeError`` whenever a contact wasn't found.  By checking
+    # explicitly for ``None`` we only display details when a valid index is
+    # returned.
+    if key is not None:
         print("******************************")
         print("**  Contact has been found  **")
         print("******************************")
@@ -131,7 +138,12 @@ def edit_contact(data):
 
 def delete_contact(data):
     id_contact = search_contact(data)
-    if str(id_contact):
+    # ``search_contact`` returns ``None`` when the user doesn't confirm a
+    # contact.  The previous check ``if str(id_contact)`` behaved the same as
+    # ``if True`` even when ``id_contact`` was ``None``.  This meant the code
+    # attempted to delete ``data[None]`` and failed.  Guard against this by
+    # ensuring a valid index was returned before attempting the deletion.
+    if id_contact is not None:
         check = input("Are you sure?  (y/n) ")
         if check.lower() == 'y':
             del data[id_contact]
